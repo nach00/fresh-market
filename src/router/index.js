@@ -1,29 +1,72 @@
+// Imports
 import Vue from 'vue'
-import VueRouter from 'vue-router'
-import Home from '../views/Home.vue'
+import Router from 'vue-router'
+import vuetify from '../plugins/vuetify'
+import kebabCase from 'lodash/kebabCase'
 
-Vue.use(VueRouter)
+Vue.use(Router)
 
-const routes = [
-  {
-    path: '/',
-    name: 'Home',
-    component: Home
-  },
-  {
-    path: '/about',
-    name: 'About',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
+function layout (path, name, children) {
+  const folder = kebabCase(name)
+
+  return {
+    path,
+    component: () => import(`@/layouts/${folder}/Index`),
+    children,
   }
-]
+}
 
-const router = new VueRouter({
+function redirect (redirect) {
+  return { path: '*', redirect }
+}
+
+function route (path, name, file) {
+  const folder = (file || `${kebabCase(name)}`).toLowerCase()
+
+  return {
+    path,
+    name,
+    component: () => import(`@/views/${folder}/Index.vue`),
+  }
+}
+
+const router = new Router({
   mode: 'history',
   base: process.env.BASE_URL,
-  routes
+  scrollBehavior: (to, from, savedPosition) => {
+    let scrollTo = 0
+
+    if (to.hash) {
+      scrollTo = to.hash
+    } else if (savedPosition) {
+      scrollTo = savedPosition.y
+    }
+
+    return vuetify.framework.goTo(scrollTo)
+  },
+  routes: [
+    layout('/', 'Frontend', [
+      route('', 'Home'),
+      route('locations', 'Locations'),
+      route('contact', 'Contact'),
+      route('about', 'About'),
+      route('coupon', 'Coupon'),
+    ]),
+    redirect('/'),
+  ],
 })
+
+// Bootstrap Analytics
+// Set in .env
+// https://github.com/MatteoGabriele/vue-analytics
+if (process.env.VUE_APP_GOOGLE_ANALYTICS) {
+  Vue.use(require('vue-analytics').default, {
+    id: process.env.VUE_APP_GOOGLE_ANALYTICS,
+    router,
+    autoTracking: {
+      page: process.env.NODE_ENV !== 'development',
+    },
+  })
+}
 
 export default router

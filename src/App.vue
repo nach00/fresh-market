@@ -1,9 +1,16 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
+    <router-view />
   </div>
 </template>
+
+<style lang="sass">
+  .background-color
+    background-color: #feefcc !important
+
+  .alt-heading
+    font-size: 1rem !important
+    font-weight: 700 !important
+    letter-spacing: 3px !important
+    text-transform: uppercase
+</style>
